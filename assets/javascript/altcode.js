@@ -10,7 +10,6 @@ var config = {
 };
 
 firebase.initializeApp(config);
-
 var database = firebase.database();
 
 // display current time
@@ -64,22 +63,19 @@ $("#add-train-btn").on("click", function(event) {
 	return false;
 });
 
-// creates firebase event for adding train to database and adds a row to the html
-database.ref().on("child_added", function(childSnapshot) {
-	console.log(childSnapshot.val());
+function addTrain(childSnapshot) {
 
-	var trainName = childSnapshot.val().name;
-	var trainDestination = childSnapshot.val().destination;
-	var trainTime = childSnapshot.val().time;
-	var trainFrequency = childSnapshot.val().frequency;
-
-	console.log(trainName);
-	console.log(trainDestination);
-	console.log(trainTime);
-	console.log(trainFrequency);
+	var train = {
+		trainName: childSnapshot.val().name,
+		trainDestination: childSnapshot.val().destination,
+		trainTime: childSnapshot.val().time,
+		trainFrequency: childSnapshot.val().frequency,
+		minutesAway: 0,
+		nextArrival: ""
+	}
 
 	// converts the train time
-	var timeConverted = moment(trainTime, "HH:mm");
+	var timeConverted = moment(train.trainTime, "HH:mm");
 	console.log("Time converted: " + timeConverted);
 
 	// calculate the difference between first train time and now
@@ -87,26 +83,45 @@ database.ref().on("child_added", function(childSnapshot) {
 	console.log("Difference in time: " + timeDiff);
 
 	// calculate minutes until next train 
-	var remainder = timeDiff % trainFrequency;
+	var remainder = timeDiff % train.trainFrequency;
 	console.log("Remainder: " + remainder);
-	var minutesAway = trainFrequency - remainder;
-	console.log("Minutes away: " + minutesAway);
+	console.log("Train Frequency:" + train.trainFrequency)
+	train.minutesAway = train.trainFrequency - remainder;
+	console.log("Minutes away: " + train.minutesAway);
 
 	// calculate next train
-	var nextTrain = moment().add(minutesAway, "minutes");
+	var nextTrain = moment().add(train.minutesAway, "minutes");
 
 	// arrival time
-	var nextArrival = moment(nextTrain).format("HH:mm");
-	console.log("Next arrival: " + nextArrival);
+	train.nextArrival = moment(nextTrain).format("HH:mm");
+	console.log("Next arrival: " + train.nextArrival);
 
 	// add each train's data into the table
-	$("#new-train").append("<tr><td>" + trainName + "</td><td>" + trainDestination + "</td><td>" + "Every " + trainFrequency + " min" + "</td><td>" + nextArrival + "</td><td>" + minutesAway + " min" + "</td></tr>");
+	$("#new-train").append("<tr><td>" + train.trainName + "</td><td>" + train.trainDestination + "</td><td>" + "Every " + train.trainFrequency + " min" + "</td><td>" + train.nextArrival + "</td><td>" + train.minutesAway + " min" + "</td></tr>");
+}
+
+// creates firebase event for adding train to database and adds a row to the html
+database.ref().on("child_added", function(childSnapshot) {
+
+	addTrain(childSnapshot);
+
 }, function(errorObject) {
 	console.log("Errors handled: " + errorObject.code);
 });
 
-// updates the schedule every minute (i didn't have time to figure out how to do this without a simple page reload since i also want to spend time on project #1)
 setInterval(function() {
 	location.reload(true);
+	// clear tbody
+	// read from database
+	// call "child_added" function
+
+	// $("#new-train").empty();
+	// database.ref().once('value').then(function(snapshot) {
+	// 	console.log(snapshot.val());
+	// 	addTrain(snapshot.val());
+	// })
 }, 60000);
+
+
+
 
