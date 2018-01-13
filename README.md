@@ -3,3 +3,5 @@ Worldwide Railways is a train schedule application that incorporates Firebase to
 
 ### Technologies Used
 HTML, CSS, JavaScript, jQuery, Firebase, Moment.js, Bootstrap, Bootswatch
+
+![TrainScheduler Screenshot](https://github.com/natplusultra/TrainScheduler/blob/master/assets/images/WorldwideRails%20Screenshot.png)
